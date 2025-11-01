@@ -1,0 +1,11 @@
+.container {
+  width: 100vw;
+  height: calc(100vh - 49px);
+  position: absolute;
+  top: 49px;
+  overflow: hidden;
+  contain: layout paint;
+  & > div {
+    height: 100%;
+  }
+}

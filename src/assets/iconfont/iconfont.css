@@ -1,0 +1,47 @@
+@font-face {
+  font-family: "iconfont"; /* Project id 5034274 */
+  src: url('iconfont.woff2?t=1761907865352') format('woff2'),
+       url('iconfont.woff?t=1761907865352') format('woff'),
+       url('iconfont.ttf?t=1761907865352') format('truetype');
+}
+
+.iconfont {
+  font-family: "iconfont" !important;
+  font-size: 16px;
+  font-style: normal;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.icon-chat_send_icon:before {
+  content: "\e605";
+}
+
+.icon-chat_ai_head:before {
+  content: "\e606";
+}
+
+.icon-chat_icon:before {
+  content: "\e607";
+}
+
+.icon-chat_logo:before {
+  content: "\e608";
+}
+
+.icon-usernameAndEmail:before {
+  content: "\e85a";
+}
+
+.icon-code:before {
+  content: "\e6a0";
+}
+
+.icon-lock:before {
+  content: "\e68b";
+}
+
+.icon-log-out:before {
+  content: "\e67b";
+}
+

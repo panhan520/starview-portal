@@ -1,0 +1,40 @@
+.container {
+  height: 100%;
+  background: url('~/assets/images/auth/auth_bg.svg') no-repeat center;
+  background-size: cover;
+  padding: 0 40px;
+  box-sizing: border-box;
+  :global(.formily-element-plus-form-item-error-help) {
+    text-align: left;
+  }
+  .fragment {
+    width: 600px;
+    margin-right: 8vw;
+  }
+  .form {
+    width: 476px;
+    height: auto;
+    border-radius: 20px;
+    padding: 30px 25px;
+    box-sizing: border-box;
+    z-index: 9;
+    :global(.el-card__body) {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .logo {
+      width: 60px;
+      height: 60px;
+      margin-bottom: 20px;
+    }
+  }
+  .submit {
+    width: 100%;
+    padding: 16px 0;
+    margin-top: 20px;
+  }
+  .btnGroup {
+    margin-top: 28vh;
+  }
+}

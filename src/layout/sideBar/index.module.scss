@@ -1,0 +1,35 @@
+.container {
+  height: 100%;
+  padding: 16px;
+  box-sizing: border-box;
+  :global(.ant-menu) {
+    height: 100%;
+    border: none!important;
+  }
+  :global(.ant-menu-item) {
+    text-align: left;
+  }
+  .banner {
+    width: 100%;
+    height: 32px;
+    margin-top: 20px;
+    padding: 0 12px;
+    font-weight: 600;
+    line-height: 30px;
+    color: #409eff;
+    box-sizing: border-box;
+    border: 1px solid #409eff;
+    border-radius: 4px;
+    background-color: rgb(236, 245, 255);
+    .title {
+      font-size: 12px;
+      color: #409eff;
+    }
+  }
+  .closeIcon {
+    cursor: pointer;
+    &:hover {
+      color: #409eff;
+    }
+  }
+}
