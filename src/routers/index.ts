@@ -36,6 +36,10 @@ export const microAppRoutes: IRouteRecordRaw[] = [{
       path: 'starview/:pathMatch(.*)*',
       microApp: MicroApp.STARVIEW,
     },
+    {
+      path: 'starview/:pathMatch(.*)*',
+      microApp: MicroApp.AUTO_MATION,
+    },
   ],
 }]
 /** 基础业务路由 */
