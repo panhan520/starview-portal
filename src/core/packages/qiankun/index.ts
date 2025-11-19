@@ -6,6 +6,8 @@ export enum MicroApp {
   ACCOUNT_MANAGEMENT = 'ACCOUNT_MANAGEMENT',
   /** 星云（可观测）子应用 */
   STARVIEW = 'STARVIEW',
+  /** 运维自动化平台 */
+  AUTO_MATION = 'AUTO_MATION',
 }
 
 /** 
@@ -29,4 +31,12 @@ export const getMicroAppConfigs = (env: Record<string, any>): IMicroConfig[] => 
     icon: null,
     label: '星云数据观测平台',
   },
+  {
+    name: MicroApp.AUTO_MATION,
+    entry: env?.VITE_AUTOMATION_URL,
+    activeRule: '/microApp/automation',
+    key: 2,
+    icon: null,
+    label: '运维自动化平台',
+  }
 ])
