@@ -21,3 +21,11 @@
     padding: 0;
   }
 }
+.modalClass {
+  height: calc(100% - 49px);
+  margin-top: 49px;
+  background-color: transparent!important;
+  :global(.el-drawer__header) {
+    margin-bottom: 16px;
+  }
+}

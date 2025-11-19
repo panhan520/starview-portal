@@ -10,30 +10,30 @@
         <slot />
       </section>
     </div>
-
     <!-- 遮罩层 -->
     <div class="chat-mask" @click="close"></div>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { defineProps } from 'vue'
-import emitter from '~/utils/emitter'
-import ChatLogo from '~/assets/images/aiAgent/chat_logo.svg'
-defineProps<{ visible: boolean }>()
-const close = () => {
-  emitter.emit('closeChat')
-}
+  import { ref } from 'vue'
+  import ChatLogo from '~/assets/images/aiAgent/chat_logo.svg'
+  const visible = ref(false)
+  const open = () => {
+    visible.value = true
+  }
+  const close = () => {
+    visible.value = false
+  }
+  defineExpose({ open, close })
 </script>
 
 <style lang="scss" scoped>
 .chat-sidebar {
   position: fixed;
   top: 0;
-  // left: var(--el-menu-width, 220px); // 紧贴菜单栏右侧
   left: 0;
   height: 100%;
-  // width: calc(100% - var(--el-menu-width, 220px));
   width: 100%;
   display: flex;
   z-index: 2000;
@@ -73,7 +73,7 @@ const close = () => {
   }
 }
 .chatSidebarHide {
-  left: var(--el-menu-width, 60px); // 紧贴菜单栏右侧
+  left: var(--el-menu-width, 60px);
   width: calc(100% - var(--el-menu-width, 60px));
 }
 :deep(.el-button > span) {

@@ -47,7 +47,7 @@ export const useAuthStore = defineStore('useAuthStore', (): IUseAuthStore => {
       clearUserInfo()
       productsStore.clearProducts()
       ElMessage({
-        type: 'success',
+        type: 'warning',
         message: 'token失效，已自动登出',
       })
       router.push({ path: '/login', query: { redirect: route.path } })

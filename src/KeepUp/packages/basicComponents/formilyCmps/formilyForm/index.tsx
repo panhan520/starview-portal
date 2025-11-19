@@ -1,4 +1,4 @@
-import { defineComponent, ref, onUnmounted } from 'vue'
+import { defineComponent, ref, h, onUnmounted } from 'vue'
 import { createForm } from '@formily/core'
 import { createSchemaField, FormProvider } from '@formily/vue'
 import {
@@ -153,14 +153,16 @@ export default defineComponent({
     return () => (
       <div ref={containerRef} class={stylus.container}>
         <FormProvider form={formRef}>
-          <SchemaField
-            schema={props.config}
-            scope={{
-              ...props.scope,
-              fetchOptions,
-            }}
-          />
-          {slots?.btnGroup?.()}
+          <PreviewText.Placeholder value='-'>
+            <SchemaField
+              schema={props.config}
+              scope={{
+                ...props.scope,
+                fetchOptions,
+              }}
+            />
+            {slots?.btnGroup?.()}
+          </PreviewText.Placeholder>
         </FormProvider>
       </div>
     )

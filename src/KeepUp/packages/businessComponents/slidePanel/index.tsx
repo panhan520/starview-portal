@@ -15,7 +15,8 @@ export * from './interfaces'
 export default defineComponent({
   name: 'SlidePanel',
   props,
-  setup(props, { slots, expose }) {
+  emit: ['close'],
+  setup(props, { slots, emit, expose }) {
     const visible = ref(false)
     const open = () => {
       visible.value = true
@@ -30,13 +31,22 @@ export default defineComponent({
     })
     return () => (
       <div
-        class={[styles.container, styles.shadowRight]}
+        class={styles.container}
         style={{
           height: props.height,
-          left: visible.value ? 0 : `-1000px`,
+          left: visible.value ? 0 : `-500%`,
+        }}
+        onClick={() => {
+          emit('close')
+          close()
         }}
       >
-        {slots?.default?.({ close })}
+        <div
+          class={[styles.inner, styles.shadowRight]}
+          onClick={(e: Event) => { e.stopPropagation() }}
+        >
+          {slots?.default?.({ close })}
+        </div>
       </div>
     )
   }

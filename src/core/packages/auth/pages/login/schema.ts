@@ -54,10 +54,11 @@ export const getSchema = (): ISchema => ({
       "x-validator": {
         triggerType: 'onInput', 
         validator: (value: string = '') => {
+          const regx = /^(?=.{8,32}$)(?:(?=.*[a-z])(?=.*[A-Z])(?=.*\d)|(?=.*[a-z])(?=.*[A-Z])(?=.*[^A-Za-z0-9])|(?=.*[a-z])(?=.*\d)(?=.*[^A-Za-z0-9])|(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]))[^\s]+$/
           if (!value) {
             return '请输入密码'
-          } else if (value.length < 5 || value.length > 20) {
-            return '长度要求在 5 到 20 个字符'
+          } else if (!regx.test(value)) {
+            return '长度要求在 8 到 32 个字符，至少同时包含大小写字母、数字、特殊符号中的3种'
           }
         },
       },

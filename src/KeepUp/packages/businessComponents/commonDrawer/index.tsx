@@ -20,7 +20,8 @@ export default defineComponent({
   name: 'CommonEditor',
   inheritAttrs: false,
   props,
-  setup(props, { expose, slots, attrs }) {
+  emit: ['close'],
+  setup(props, { expose, emit, slots, attrs }) {
     const visible = ref(false)
     /** 打开抽屉 */
     const open = () => {
@@ -42,6 +43,7 @@ export default defineComponent({
         title={props.title}
         size={props.size}
         destroyOnClose
+        onClose={() => { emit('close') }}
         v-slots={{
           title: slots.title?.(),
           footer: slots.footer?.(),

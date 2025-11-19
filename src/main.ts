@@ -23,14 +23,13 @@ const initApp = async () => {
 const start = async () => {
   await initApp() // 3: 初始化vue项目
   const authStore = useAuthStore()
-  const globalState = initGlobalStateQiankun({
+  const qiankunStore = useQiankunStore()
+  /** 存储qiankun全局数据的actions */
+  qiankunStore.globalState = initGlobalStateQiankun({
     userInfo: authStore.userInfo,
     resetApp: authStore.resetApp,
   })
-  const qiankunStore = useQiankunStore()
-  /** 存储qiankun全局数据的actions */
-  qiankunStore.globalState = globalState
-  globalState.onGlobalStateChange((state: any) => {
+  qiankunStore.globalState.onGlobalStateChange((state: any) => {
     console.log('基座全局数据被子应用改变', { state })
   }, true) // 2: 实时更新state
   const result = (getMicroAppConfigs(import.meta.env) || []).map(v => ({ ...v, container: `#microApp` }))
