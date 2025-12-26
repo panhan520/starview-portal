@@ -16,32 +16,36 @@ const commonRoutes: IRouteRecordRaw[] = [
   },
 ]
 /** 全局兜底路由 */
-export const notFoundRoutes: RouteRecordRaw[] = [{
-  path: '/:pathMatch(.*)',
-  name: 'notFound',
-  redirect: '/404',
-}]
+export const notFoundRoutes: RouteRecordRaw[] = [
+  {
+    path: '/:pathMatch(.*)',
+    name: 'notFound',
+    redirect: '/404',
+  },
+]
 /** 子应用路由 */
-export const microAppRoutes: IRouteRecordRaw[] = [{
-  path: '/microApp',
-  name: 'MicroApp',
-  component: Layout,
-  redirect: '/microApp/accountManagement',
-  children: [
-    {
-      path: 'accountManagement/:pathMatch(.*)*',
-      microApp: MicroApp.ACCOUNT_MANAGEMENT,
-    },
-    {
-      path: 'starview/:pathMatch(.*)*',
-      microApp: MicroApp.STARVIEW,
-    },
-    {
-      path: 'starview/:pathMatch(.*)*',
-      microApp: MicroApp.AUTO_MATION,
-    },
-  ],
-}]
+export const microAppRoutes: IRouteRecordRaw[] = [
+  {
+    path: '/microApp',
+    name: 'MicroApp',
+    component: Layout,
+    redirect: '/microApp/accountManagement',
+    children: [
+      {
+        path: 'accountManagement/:pathMatch(.*)*',
+        microApp: MicroApp.ACCOUNT_MANAGEMENT,
+      },
+      {
+        path: 'starview/:pathMatch(.*)*',
+        microApp: MicroApp.STARVIEW,
+      },
+      {
+        path: 'automation/:pathMatch(.*)*',
+        microApp: MicroApp.AUTOMATION,
+      },
+    ],
+  },
+]
 /** 基础业务路由 */
 export const basicRoutes: IRouteRecordRaw[] = [
   ...commonRoutes,

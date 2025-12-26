@@ -42,7 +42,17 @@ export const setupPermissionGuard = (router) => {
       }
     } else {
       /** 未登录，到登录页 */
-      isPublicPage ? next() : next(`/login?redirect=${to.path}`)
+      if (to.path === '/register') {
+        const { inviter_id, invite_time, type } = to.query
+        const hasInvite = [inviter_id, invite_time].every(v => v !== undefined && v !== null && v !== '')
+        if (type === 'invite' && hasInvite) {
+          next()
+        } else {
+          next(`/login`)
+        }
+      } else {
+        isPublicPage ? next() : next(`/login?redirect=${to.path}`)
+      }
     }
   })
   router.afterEach(() => {

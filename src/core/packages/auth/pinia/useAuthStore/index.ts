@@ -2,7 +2,6 @@ import { ref } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { defineStore } from 'pinia'
 import { ElMessage } from 'element-plus'
-import { jwtDecode } from 'jwt-decode'
 import { checkRoute } from '~/utils/router'
 import { loginApi, logoutApi, registerApi, getRolesApi } from '../../api/auth'
 import { useProductsStore } from '../useProductsStore'
@@ -10,7 +9,7 @@ import { useQiankunStore } from '../../../qiankun/stores/useQiankunStore'
 import { getDefaultUserInfo } from './constants'
 
 import type { Form } from '@formily/core'
-import type { JwtPayload } from 'jwt-decode'
+import JSONbig from 'json-bigint';
 import type { ILoginRes, IRegisterParams } from '../../api/auth/interfaces'
 import type { IJwtExpose, IUserInfo, IUseAuthStore } from './interfaces'
 
@@ -24,7 +23,11 @@ export const useAuthStore = defineStore('useAuthStore', (): IUseAuthStore => {
   const userInfo = ref<IUserInfo>(getDefaultUserInfo())
   /** 设置用户信息 */
   const setUserInfo = (userRes: ILoginRes & { roles: string[] }) => {
-    const jwt = jwtDecode<JwtPayload & IJwtExpose>(userRes.token)
+    // const jwt = jwtDecode<JwtPayload & IJwtExpose>(userRes.token)
+    const payload = userRes.token.split('.')[1];
+    const json = atob(payload);
+    const jwt = JSONbig.parse<IJwtExpose>(json);
+
     userInfo.value = {
       username: jwt.username,
       userId: userRes.userId,

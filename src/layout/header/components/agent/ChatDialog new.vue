@@ -36,6 +36,11 @@
             class="copy-btn copy-btn-left"
             @click="copyText(msg.message)"
           />
+          <!-- <DotLoading
+            v-if="isVNode(msg.message) || !msg.message"
+            text="正在生成中"
+          /> -->
+
           <component v-if="isVNode(msg.message)" :is="msg.message" />
           <div v-else class="bubble" v-html="renderMarkdown(msg.message)"></div>
           <img
@@ -51,17 +56,17 @@
     <!-- 输入区 -->
     <footer class="chat-footer" ref="inputWrapperRef">
       <ElInput
-        v-model="inputValue"
+        v-model="input"
         placeholder="在这里输入问题，回车键发送"
         type="textarea"
         :autosize="{ minRows: 1, maxRows: 4 }"
         resize="none"
         ref="textareaRef"
         @keyup.enter.exact.prevent="sendMessage"
-        @inputValue="updateHeight"
+        @input="updateHeight"
       />
       <img
-        v-if="isLoading"
+        v-if="isGenerating"
         :src="ChatStop"
         class="sendIcon"
         @click="sendMessage"
@@ -71,42 +76,49 @@
   </div>
 </template>
 <script lang="ts" setup>
-import { ElInput, ElMessage, ElScrollbar } from "element-plus";
+import { ref, nextTick, onBeforeUnmount, VNode, isVNode, h } from "vue";
+import { ElMessage, ElInput, ElScrollbar } from "element-plus";
 import MarkdownIt from "markdown-it";
 import Prism from "prismjs";
+import "prismjs/themes/prism-tomorrow.css";
 import "prismjs/components/prism-bash.js";
-import "prismjs/plugins/copy-to-clipboard/prism-copy-to-clipboard.js";
 import "prismjs/plugins/toolbar/prism-toolbar.css";
 import "prismjs/plugins/toolbar/prism-toolbar.js";
-import "prismjs/themes/prism-tomorrow.css";
-import { h, isVNode, nextTick, onBeforeUnmount, ref, VNode } from "vue";
+import "prismjs/plugins/copy-to-clipboard/prism-copy-to-clipboard.js";
+import {
+  createSessionApi,
+  getSessionDetailApi,
+  getSessionListApi,
+} from "~/core/packages/auth/api/ai";
+import {
+  CHAT_SCENE,
+  CHAT_SCENE_NAME,
+  ROLE,
+} from "~/core/packages/auth/api/ai/constants";
+import { useSSEChat } from "./useSSEChat";
+import { ChatMsg } from "~/core/packages/auth/api/ai/interfaces";
 import ChatAiHead from "~/assets/images/aiAgent/chat_ai_head.png";
 import ChatCopy from "~/assets/images/aiAgent/image (1).png";
-import ChatSend from "~/assets/images/aiAgent/image (4).png";
 import ChatStop from "~/assets/images/aiAgent/image (5).png";
-import { CHAT_SCENE, ROLE } from "~/core/packages/auth/api/ai/constants";
+import ChatSend from "~/assets/images/aiAgent/image (4).png";
 
 import ChartUserHead from "~/assets/images/aiAgent/image (6).png";
 import DotLoading from "./loadingDot";
 
-import { useChatScroll } from "./useChatScroll";
-import { useChatStream } from "./useChatStream";
+//  TODO： 目前先这么写，到时候抽取公共的聊天组件时再优化  && 保持跟可观测的数据流处理方式一致
 
-// 滚动相关
+const messages = ref<ChatMsg[]>([]);
+const input = ref("");
 const scrollRef = ref();
-const { scrollToBottom } = useChatScroll({ ref: scrollRef });
-const { sendStream, stopStream, resetSession, isLoading, messages } =
-  useChatStream({
-    chatScene: CHAT_SCENE.GENERAL,
-    closeHistory: true,
-    loading: h(DotLoading, { text: "正在生成中" }),
-    onScrollToBottom: () => scrollToBottom(),
-    onError: () => ElMessage.error("发送消息失败"),
-  });
-
-const inputValue = ref("");
+const isGenerating = ref(false);
+const textareaRef = ref();
 const inputWrapperRef = ref<HTMLElement | null>(null);
 const inputHeight = ref(54); // 初始高度
+const abortController = ref<AbortController | null>(null);
+
+// 当前会话ID
+const currentSessionId = ref<number | null>(null);
+
 const md = new MarkdownIt({
   html: true,
   highlight: (str: string, lang: string) => {
@@ -141,14 +153,122 @@ const updateHeight = () => {
 
 // 发送流式数据
 const sendMessage = async () => {
-  if (!inputValue.value.trim()) {
-    ElMessage.warning("请输入消息内容");
+  const messageContent = input.value.trim();
+  input.value = "";
+  if (!messageContent) return;
+  const userMessage: ChatMsg = {
+    messageId: Date.now(),
+    role: ROLE.USER,
+    message: messageContent,
+  };
+
+  messages.value.push(userMessage);
+  scrollToBottom();
+
+  if (isGenerating.value && abortController) {
+    // 如果正在生成，点击按钮则停止生成
+    stopStream();
+    isGenerating.value = false;
     return;
   }
-  const msg = inputValue.value.trim();
-  inputValue.value = "";
-  sendStream({
-    text: msg,
+
+  // 添加加载中的消息（初始内容为空字符串，用于累加）
+  const loadingMessage: ChatMsg = {
+    messageId: Date.now() + 1,
+    role: ROLE.ASSISTANT,
+    message: h(DotLoading, { text: "正在生成中" }),
+  };
+  isGenerating.value = true;
+  messages.value.push(loadingMessage);
+  setTimeout(async () => {
+    try {
+      // 每一次都是第一次进入
+      const sessionRes = await createSessionApi({
+        chatScene: CHAT_SCENE.GENERAL,
+        sessionName: messageContent,
+      });
+      currentSessionId.value = sessionRes.sessionId;
+
+      // 发送流式数据请求参数
+      const requestParams: any = {
+        sessionId: Number(currentSessionId.value),
+        message: messageContent,
+      };
+
+      abortController.value = useSSEChat(requestParams, {
+        onMessage(data) {
+          const target = messages.value.find(
+            (m) => m.messageId === loadingMessage.messageId
+          );
+          if (target) {
+            if (typeof target.message !== "string") {
+              loadingMessage.message = "";
+            }
+            target.message += data.message;
+            target.messageId = data.messageId;
+            loadingMessage.messageId = data.messageId;
+            // 实时滚动到底部
+            scrollToBottom();
+          }
+        },
+        onError(error) {
+          const target = messages.value.find(
+            (m) => m.messageId === loadingMessage.messageId
+          );
+          if (target) {
+            if (!target.message) {
+              target.message = "AI 回复失败，请稍后重试～";
+            }
+          }
+        },
+        onComplete() {
+          // 更新加载状态
+          const target = messages.value.find(
+            (m) => m.messageId === loadingMessage.messageId
+          );
+          if (target) {
+            // 如果内容为空，显示提示
+            if (
+              !target.message ||
+              (typeof target.message === "string" &&
+                target.message.includes("正在生成中"))
+            ) {
+              target.message = "暂无回复内容";
+            }
+          }
+          abortController.value = null;
+          scrollToBottom();
+        },
+      });
+    } catch (error: any) {
+      const target = messages.value.find(
+        (m) => m.messageId === loadingMessage.messageId
+      );
+      target.message = "AI 回复失败，请稍后重试～";
+      abortController.value = null;
+    } finally {
+      isGenerating.value = false;
+    }
+  }, 1000);
+};
+
+// 停止流式请求
+const stopStream = () => {
+  if (abortController.value) {
+    abortController.value.abort();
+    abortController.value = null;
+  }
+};
+
+const scrollToBottom = () => {
+  nextTick(() => {
+    // el-scrollbar 内部的实际滚动容器
+    const wrapEl = scrollRef.value?.$el?.querySelector(
+      ".el-scrollbar__wrap"
+    ) as HTMLElement;
+    if (wrapEl) {
+      wrapEl.scrollTop = wrapEl.scrollHeight;
+    }
   });
 };
 
@@ -168,7 +288,6 @@ const copyText = async (text: string | VNode) => {
 // 组件卸载时清理资源
 onBeforeUnmount(() => {
   stopStream();
-  resetSession();
 });
 </script>
 

@@ -60,6 +60,11 @@ export default defineConfig(async ({ mode }) => {
           target: 'https://gateway.observe.dev.gainetics.io',
           changeOrigin: true,
         },
+        '/api/v1': {
+          // target: 'http://172.31.28.121',
+          target: 'http://172.31.42.177:8000',
+          changeOrigin: true
+        }
       },
     },
   })
